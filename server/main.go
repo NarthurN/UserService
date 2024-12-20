@@ -20,6 +20,7 @@ var users = map[string]User{}
 func main() {
 	http.HandleFunc("/register", handleRegister)
 	
+	fmt.Println("Server is listening...")
 	if err := http.ListenAndServe(":9000", nil); err != nil {
 		panic(err)
 	}
@@ -49,7 +50,7 @@ func handleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := fmt.Sprintf("%s", md5.Sum([]byte(login))) // получаем 265dsfsd54vd3434
-	if _, ok := users[token]; !ok {
+	if _, ok := users[token]; ok {
 		http.Error(w, "Такой пользователь уже существует", http.StatusForbidden)
 		return
 	} 
