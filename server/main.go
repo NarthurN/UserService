@@ -82,12 +82,12 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	login, password := data[0], data[1]
 	for token, user := range users {
 		if user.Login == login && user.Password == password {
-			w.Header().Set("Authorization", token)
-			break
+			w.WriteHeader(http.StatusOK)
+			_, _ = fmt.Fprint(w, "Пользователь успешно залогинился\n")
+			_, _ = fmt.Fprintf(w, "Token %s", token)
+			return
 		}
 		http.Error(w, "Нет такого пользователя", http.StatusBadRequest)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	_, _ = fmt.Fprint(w, "Пользователь успешно залогинился")
 }
