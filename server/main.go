@@ -19,6 +19,7 @@ var users = map[string]User{}
 
 func main() {
 	http.HandleFunc("/register", handleRegister)
+	http.HandleFunc("/login", handleLogin)
 	
 	fmt.Println("Server is listening...")
 	if err := http.ListenAndServe(":9000", nil); err != nil {
@@ -62,4 +63,33 @@ func handleRegister(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	_, _ = fmt.Fprint(w, "Пользователь успешно создан")
+}
+
+func handleLogin(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
+		return
+	}
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Не удалось прочитать запрос", http.StatusBadRequest)
+		return
+	}
+	data := strings.Split(string(bodyBytes), " ")
+	if len(data) != 2 {
+		http.Error(w, "Нужен текст в виде: login password", http.StatusBadRequest)
+		return
+	}
+	login, password := data[0], data[1]
+	for token, user := range users {
+		if user.Login == login && user.Password == password {
+			w.Header().Set("Authorization", "Basic " + token)
+			w.Header().Set("Authorization", `Basic realm="api"`)
+			break
+		}
+		http.Error(w, "Нет такого пользователя", http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	_, _ = fmt.Fprint(w, "Пользователь успешно залогинился")
 }
