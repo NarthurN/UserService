@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"crypto/md5"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -16,11 +16,10 @@ type User struct {
 
 var users = map[string]User{}
 
-
 func main() {
 	http.HandleFunc("/register", handleRegister)
 	http.HandleFunc("/login", handleLogin)
-	
+
 	fmt.Println("Server is listening...")
 	if err := http.ListenAndServe(":9000", nil); err != nil {
 		panic(err)
@@ -38,7 +37,7 @@ func handleRegister(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Не удалось прочитать запрос", http.StatusBadRequest)
 		return
 	}
-	
+
 	data := strings.Split(string(bodyBytes), " ")
 	if len(data) != 3 {
 		http.Error(w, "Нужен текст в виде: login password name", http.StatusBadRequest)
@@ -54,11 +53,11 @@ func handleRegister(w http.ResponseWriter, r *http.Request) {
 	if _, ok := users[token]; ok {
 		http.Error(w, "Такой пользователь уже существует", http.StatusForbidden)
 		return
-	} 
+	}
 	users[token] = User{
-		Login: login,
+		Login:    login,
 		Password: password,
-		Name: name,
+		Name:     name,
 	}
 
 	w.WriteHeader(http.StatusCreated)
@@ -83,8 +82,7 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	login, password := data[0], data[1]
 	for token, user := range users {
 		if user.Login == login && user.Password == password {
-			w.Header().Set("Authorization", "Basic " + token)
-			w.Header().Set("Authorization", `Basic realm="api"`)
+			w.Header().Set("Authorization", token)
 			break
 		}
 		http.Error(w, "Нет такого пользователя", http.StatusBadRequest)
